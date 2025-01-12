@@ -326,7 +326,7 @@ class Coach:
 		for key, value in metrics_dict.items():
 			print(f'\t{key} = ', value)
 
-	def parse_and_log_images(self, id_logs, x, y, y_hat, y_recovered, title, subscript=None, display_count=2):
+	def parse_and_log_images(self, id_logs, x, y, y_hat, y_recovered, title, subscript=None, display_count=1):
 		im_data = []
 		for i in range(display_count):
 			cur_im_data = {
