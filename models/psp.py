@@ -1,5 +1,8 @@
 """
-This file defines the core research contribution
+
+TLDR BY ADI: THIS FILE CONTAINS THE CODE FOR THE SAM ENCODER AS A WHOLE THE WORD 'encoder' HERE REPRESENTS THE SAME ENCODER. AND THE 'psp_encoder' IS WHAT THE MEANS THE PSP ENCODER
+			 DO NOT CONFUSE THE NAMING
+
 """
 import copy
 from argparse import Namespace
