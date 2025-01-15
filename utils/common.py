@@ -18,8 +18,8 @@ def tensor2im(var):
 
 def vis_faces(log_hooks):
 	display_count = len(log_hooks)
-	fig = plt.figure(figsize=(12, 4 * display_count))
-	gs = fig.add_gridspec(display_count, 4)
+	fig = plt.figure(figsize=(18, 6 * display_count))
+	gs = fig.add_gridspec(display_count, 6)
 	for i in range(display_count):
 		hooks_dict = log_hooks[i]
 		vis_faces_with_age(hooks_dict, fig, gs, i)
@@ -45,3 +45,10 @@ def vis_faces_with_age(hooks_dict, fig, gs, i):
 	plt.imshow(hooks_dict['recovered_face'])
 	plt.title('Recovered\nTarget Sim={:.2f}\nOuput Age={:.2f}'.format(float(hooks_dict['diff_target_cycle']),
 																	  float(hooks_dict['output_age_cycle'])))
+	
+	fig.add_subplot(gs[i,4])
+	plt.imshow(hooks_dict['inversion_image'])
+	plt.title("pSp Inversion")
+	fig.add_subplot(gs[i, 5])
+	plt.imshow(hooks_dict['recovered_inversion_image'])
+	plt.title("Recovered pSp Inversion")

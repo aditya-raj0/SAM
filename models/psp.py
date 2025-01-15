@@ -1,6 +1,6 @@
 """
 
-TLDR BY ADI: THIS FILE CONTAINS THE CODE FOR THE SAM ENCODER AS A WHOLE THE WORD 'encoder' HERE REPRESENTS THE SAME ENCODER. AND THE 'psp_encoder' IS WHAT THE MEANS THE PSP ENCODER
+TLDR : THIS FILE CONTAINS THE CODE FOR THE SAM ENCODER AS A WHOLE THE WORD 'encoder' HERE REPRESENTS THE SAME ENCODER. AND THE 'psp_encoder' IS WHAT THE MEANS THE PSP ENCODER
 			 DO NOT CONFUSE THE NAMING
 
 """
@@ -86,17 +86,30 @@ class pSp(nn.Module):
 				else:
 					codes[:, i] = 0
 
+		# print("SHAPE OF CODES ", codes.shape)
+		# print("SHAPE OF ENCODED LATENTS ", encoded_latents.shape)
+
 		input_is_latent = (not input_code) or (input_is_full)
 		images, result_latent = self.decoder([codes],
 											 input_is_latent=input_is_latent,
 											 randomize_noise=randomize_noise,
 											 return_latents=return_latents)
 
+		# print("SHAPE OF THE Y HAT IMAGE TENSOR ", images.shape)
+
+		# inversion_img = self.decoder([encoded_latents])
+		inversion_img, _ = self.decoder([encoded_latents],
+											 input_is_latent=input_is_latent,
+											 randomize_noise=randomize_noise,
+											 return_latents=return_latents)
+
+		# print("SHAPE OF THE INVERSION IMAGE TESOR ", inversion_img.shape)
+
 		if resize:
 			images = self.face_pool(images)
 
 		if return_latents:
-			return images, result_latent
+			return images, result_latent, inversion_img
 		else:
 			return images
 

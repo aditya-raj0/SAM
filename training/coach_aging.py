@@ -81,8 +81,8 @@ class Coach:
 			self.opts.save_interval = self.opts.max_steps
 
 	def perform_forward_pass(self, x):
-		y_hat, latent = self.net.forward(x, return_latents=True)
-		return y_hat, latent
+		y_hat, latent, inversion = self.net.forward(x, return_latents=True)
+		return y_hat, latent, inversion
 
 	def __set_target_to_source(self, x, input_ages):
 		return [torch.cat((img, age * torch.ones((1, img.shape[1], img.shape[2])).to(self.device)))
@@ -109,7 +109,7 @@ class Coach:
 				target_ages = x_input[:, -1, 0, 0]
 
 				# perform forward/backward pass on real images
-				y_hat, latent = self.perform_forward_pass(x_input)
+				y_hat, latent, inversion_img = self.perform_forward_pass(x_input)
 				loss, loss_dict, id_logs = self.calc_loss(x, y, y_hat, latent,
 														  target_ages=target_ages,
 														  input_ages=input_ages,
@@ -123,7 +123,7 @@ class Coach:
 				y_hat_inverse = self.__set_target_to_source(x=y_hat_clone, input_ages=input_ages_clone)
 				y_hat_inverse = torch.stack(y_hat_inverse)
 				reverse_target_ages = y_hat_inverse[:, -1, 0, 0]
-				y_recovered, latent_cycle = self.perform_forward_pass(y_hat_inverse)
+				y_recovered, latent_cycle, recovered_inversion_img = self.perform_forward_pass(y_hat_inverse)
 				loss, cycle_loss_dict, cycle_id_logs = self.calc_loss(x, y, y_recovered, latent_cycle,
 																	  target_ages=reverse_target_ages,
 																	  input_ages=input_ages,
@@ -141,7 +141,7 @@ class Coach:
 				# Logging related
 				if self.global_step % self.opts.image_interval == 0 or \
 						(self.global_step < 1000 and self.global_step % 25 == 0):
-					self.parse_and_log_images(id_logs, x, y, y_hat, y_recovered,
+					self.parse_and_log_images(id_logs, x, y, y_hat, y_recovered, inversion_img, recovered_inversion_img,
 											  title='images/train/faces')
 
 				if self.global_step % self.opts.board_interval == 0:
@@ -189,7 +189,7 @@ class Coach:
 				target_ages = x_input[:, -1, 0, 0]
 
 				# perform forward/backward pass on real images
-				y_hat, latent = self.perform_forward_pass(x_input)
+				y_hat, latent, inversion_img = self.perform_forward_pass(x_input)
 				_, cur_loss_dict, id_logs = self.calc_loss(x, y, y_hat, latent,
 														   target_ages=target_ages,
 														   input_ages=input_ages,
@@ -200,7 +200,7 @@ class Coach:
 				y_hat_inverse = self.__set_target_to_source(x=y_hat, input_ages=input_ages)
 				y_hat_inverse = torch.stack(y_hat_inverse)
 				reverse_target_ages = y_hat_inverse[:, -1, 0, 0]
-				y_recovered, latent_cycle = self.perform_forward_pass(y_hat_inverse)
+				y_recovered, latent_cycle, recovered_inversion_img = self.perform_forward_pass(y_hat_inverse)
 				loss, cycle_loss_dict, cycle_id_logs = self.calc_loss(x, y, y_recovered, latent_cycle,
 																	  target_ages=reverse_target_ages,
 																	  input_ages=input_ages,
@@ -216,7 +216,7 @@ class Coach:
 			agg_loss_dict.append(cur_loss_dict)
 
 			# Logging related
-			self.parse_and_log_images(id_logs, x, y, y_hat, y_recovered, title='images/test/faces',
+			self.parse_and_log_images(id_logs, x, y, y_hat, y_recovered, inversion_img, recovered_inversion_img, title='images/test/faces',
 									  subscript='{:04d}'.format(batch_idx))
 
 			# For first step just do sanity test on small amount of data
@@ -332,14 +332,16 @@ class Coach:
 		for key, value in metrics_dict.items():
 			print(f'\t{key} = ', value)
 
-	def parse_and_log_images(self, id_logs, x, y, y_hat, y_recovered, title, subscript=None, display_count=1):
+	def parse_and_log_images(self, id_logs, x, y, y_hat, y_recovered,inversion_img, recovered_inversion_img, title, subscript=None, display_count=1):
 		im_data = []
 		for i in range(display_count):
 			cur_im_data = {
 				'input_face': common.tensor2im(x[i]),
 				'target_face': common.tensor2im(y[i]),
 				'output_face': common.tensor2im(y_hat[i]),
-				'recovered_face': common.tensor2im(y_recovered[i])
+				'recovered_face': common.tensor2im(y_recovered[i]),
+				'inversion_image': common.tensor2im(inversion_img[i]),
+				'recovered_inversion_image': common.tensor2im(recovered_inversion_img[i])
 			}
 			if id_logs is not None:
 				for key in id_logs[i]:

@@ -1,6 +1,6 @@
 """
 
-TLDR BY ADI: SINCE SAM USES A PRETRAINED MODEL TO COMAPRE THE ID VLAUES OF THE IMPUT AND GENERATED IMAGE AND PASS IT AS A LOSS WITH A LAMBDA TO ENSORE MINIMAL LOSS OF IDENTITY 
+TLDR : SINCE SAM USES A PRETRAINED MODEL TO COMAPRE THE ID VLAUES OF THE IMPUT AND GENERATED IMAGE AND PASS IT AS A LOSS WITH A LAMBDA TO ENSORE MINIMAL LOSS OF IDENTITY 
              WHILE REAGING. THIS IS THE CODE FOR CALCULATING THE LOSS USING A PT MODLE.
 
 """
@@ -21,7 +21,7 @@ class IDLoss(nn.Module):
         self.face_pool = torch.nn.AdaptiveAvgPool2d((112, 112))
         self.facenet.eval()
 
-        id_image = Image.open('/home/adity/SAM/datasets/0-2-1.jpg')
+        id_image = Image.open('/home/adity/SAM/datasets/00284.jpg')
         id_image = id_image.convert('RGB')
         basic_transform = transforms.Compose([
             transforms.Resize((256, 256)),
@@ -48,29 +48,9 @@ class IDLoss(nn.Module):
         sim_improvement = 0
         id_logs = []
         count = 0
-
         id_image_feats = self.extract_feats(self.tr_id_image)
-        # print("X SHAPE : ", x.shape)
-        # print("Y SHAPE : ", y.shape)
-        # print("Y HAT SHAPE : ", y_hat.shape)
-        # print("X FEATS SHAPE : ", x_feats.shape)
-        # print("Y FEATS SHAPE : ", y_feats.shape)
-        # print("Y HAT FEATS SHAPE : ", y_hat_feats.shape)
-        # id_image = Image.open('/home/adity/SAM/datasets/1-1-1.jpg')
-        # id_image = id_image.convert('RGB')
-        # basic_transform = transforms.Compose([
-        #     transforms.Resize((256, 256)),
-		# 	transforms.ToTensor(),
-		# 	transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
-        # ])
-        # tr_id_image = basic_transform(id_image)
-        # tr_id_image = tr_id_image.unsqueeze(0).to('cuda')
-        # print('TRANSFORMED ID IMAGE SHAPE : ', tr_id_image.shape)
-        # id_image_feats = self.extract_feats(tr_id_image)
-        # print('ID IMAGE FEATURES SHAPE : ', id_image_feats.shape)
-
-
         for i in range(n_samples):
+
             diff_target = y_hat_feats[i].dot(y_feats[i])
             new_diff_target = y_hat_feats[i].dot(id_image_feats[0])
             diff_input = y_hat_feats[i].dot(x_feats[i])
